@@ -10,7 +10,7 @@
 // • The built-in (HW) Serial interface is used for debugging and visualization. In case the debugging is not needed,
 //   it is recommended to use the built-in Serial interface for full speed perfomace.
 // • The data packaging includes a Start Frame, checksum, and re-syncronization capability for reliable communication
-// 
+// • THIS VERSION USES MARCO'S NUNCHUK ADAPTATION, REMEMBER TO GET THE NINTENDOEXTENSIONCTRL LIBRARY AND CONNECT THE NUNCHUCK TO THE RESPECTIVE I2C PINS ON YOUR BOARD: https://www.arduino.cc/reference/en/language/functions/math/map/
 // CONFIGURATION on the hoverboard side in config.h:
 // • Option 1: Serial on Right Sensor cable (short wired cable) - recommended, since the USART3 pins are 5V tolerant.
 //   #define CONTROL_SERIAL_USART3
@@ -31,6 +31,7 @@
 //#define DEBUG_RX                        // [-] Debug received data. Prints all bytes to serial (comment-out to disable)
 
 #include <SoftwareSerial.h>
+#include <NintendoExtensionCtrl.h>
 SoftwareSerial HoverSerial(2,3); 		    // RX, TX
 
 // Global variables
@@ -63,18 +64,23 @@ SerialFeedback Feedback;
 SerialFeedback NewFeedback;
 
 // ### Joystick
+ Nunchuk nchuk;  
  int joyPin1 = 0;                 // slider variable connecetd to analog pin 0
  int joyPin2 = 1;                 // slider variable connecetd to analog pin 1
  int joyVal1 = 0;                  // variable to read the value from the analog pin 0
  int joyVal2 = 0;
  int joyTreatVal = 0; 
  int sp = 0;   
+ int mappedx = 0;
+ int mappedy = 0;
+
 
 // ########################## SETUP ##########################
 void setup() 
 {
   Serial.begin(SERIAL_BAUD);
-  Serial.println("Hoverboard Serial v1.0");
+  Serial.println("Hoverboard Serial v1.0 Edited by Marco for Fabian");
+  nchuk.begin();
     
   HoverSerial.begin(HOVER_SERIAL_BAUD);
   pinMode(LED_BUILTIN, OUTPUT);
@@ -99,8 +105,11 @@ void setup()
 //int spd = 500;
 //int str = 500;
   
-  joyVal1 = map(analogRead(joyPin1), 0, 1023, -500, 500);  //Turning speed
-  joyVal2 = map(analogRead(joyPin2), 0, 1023, -1000, 1000); //Acelarating speed
+  
+  int joyX = nchuk.joyX();
+  int joyY = nchuk.joyY();
+  joyVal1 = map(joyX, 26, 221, -500, 500);  //Turning speed
+  joyVal2 = map(joyX, 26, 224, -1000, 1000); //Acelarating speed
   delay(13);
   
   if (abs(joyVal2) < 100) {
